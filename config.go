@@ -1,19 +1,33 @@
 package main
 
-// Config struct for the global config
-type Config struct {
+import (
+	"encoding/json"
+	"os"
+)
+
+// Configuration struct for the global config
+type Configuration struct {
 	WorkingDir       string `json:"working_dir"`
 	DockerAPIVersion string `json:"docker_api_version"`
 }
 
-var config Config
+var config Configuration
 
 func init() {
-	config = loadConfig()
+	loadConfig()
 }
 
-func loadConfig() Config {
-	var parsed Config
-	//load from memory
-	return parsed
+func loadConfig() {
+	file, err := os.Open("config.json")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&config)
+	if err != nil {
+		panic(err)
+	}
+	os.Setenv("DOCKER_API_VERSION", config.DockerAPIVersion)
 }
