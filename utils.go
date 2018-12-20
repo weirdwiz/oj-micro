@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -17,17 +18,20 @@ func init() {
 	loadConfig()
 }
 
-func loadConfig() {
-	file, err := os.Open("config.json")
-	if err != nil {
-		panic(err)
+func check(e error) {
+	if e != nil {
+		panic(e)
 	}
+}
+
+func loadConfig() {
+	fmt.Println("<<<	LOADING CONFIG	>>>")
+	file, err := os.Open("config.json")
+	check(err)
 	defer file.Close()
 
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&config)
-	if err != nil {
-		panic(err)
-	}
+	check(err)
 	os.Setenv("DOCKER_API_VERSION", config.DockerAPIVersion)
 }

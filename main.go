@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
@@ -38,15 +37,8 @@ func compileEndpoint(c *gin.Context) {
 	status := http.StatusOK
 	var req Request
 	err := c.ShouldBindJSON(&req)
-	if err != nil {
-		fmt.Println(err)
-		status = http.StatusBadRequest
-	}
+	check(err)
 
-	// TODO
-	// - Make a temp file
-
-	// DUMMY DATA
 	res := compileCode(req)
 
 	// - delete the temp file
