@@ -19,12 +19,14 @@ func TempFileName(extension string) (string, string) {
 	randBytes := make([]byte, 16)
 	rand.Read(randBytes)
 	fileName := hex.EncodeToString(randBytes) + "." + extension
-	return filepath.Join(os.TempDir(), fileName), fileName
+	p, err := os.Getwd()
+	check(err)
+	return filepath.Join(p, fileName), fileName
 }
 
 // CreateTempFile creates a temp file with certain extension
 func CreateTempFile(content, extension string) (string, error) {
-	fullPath, fileName := TempFileName("go")
+	fullPath, fileName := TempFileName(extension)
 	f, err := os.Create(fullPath)
 	if err != nil {
 		return "", err
@@ -36,20 +38,31 @@ func CreateTempFile(content, extension string) (string, error) {
 
 func compileCode(req Request) ContainerOutput {
 
-	fileName, err := CreateTempFile(req.Code, "go")
+	fileName, err := CreateTempFile(req.Code, "c")
 	check(err)
-
-	fmt.Println(fileName)
 
 	ctx := context.Background()
 	cli, err := client.NewEnvClient()
 	check(err)
+	currentDir, err := os.Getwd()
+	check(err)
+	fmt.Println(fileName)
+
+	// cmd := make([]string, 4)
+	// switch req.LangID {
+	// case 1:
+	// 	cmd = append(cmd, "gcc", fileName, "&", "./a.out")
+	// default:
+	// 	cmd = append(cmd, "echo", "'Fuckboi'")
+	// }
+
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image:      "golang",
+		Image:      "weirdwiz/oj-micro",
 		Tty:        true,
 		WorkingDir: "/code",
-		Cmd:        []string{"go", "run", fileName},
-	}, &container.HostConfig{Binds: []string{"/tmp/:/code"}}, nil, "")
+		Cmd:        []string{"gcc", fileName},
+	}, &container.HostConfig{Binds: []string{currentDir + "/temp/:/code"}}, nil, "")
+
 	check(err)
 	err = cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{})
 	check(err)

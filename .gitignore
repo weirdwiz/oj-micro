@@ -1,2 +1,4 @@
 vendor/
 app
+temp/*
+!compile.sh
